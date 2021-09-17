@@ -1,110 +1,83 @@
-import { REST } from "@discordjs/rest";
-import { Player } from "discord-player";
-import fs from "fs";
-import { errorFromFunc, logger } from "../shared";
-import { Client } from "./base/client";
-import { COMMANDS_PATH } from "./shared/constants";
-import { Routes } from "discord-api-types/v9";
 import { Command } from "../../types/client";
-import { toString } from "../utility/toString";
-import type { CommandInteraction } from "discord.js/typings";
+import { Client } from "../base/client";
+import { logger } from "../shared";
+import { t } from "../utility/t";
+import { CMDS, CONFIG } from "./shared";
+import { parseTextToCommand } from "./utility/cmd";
 
-const client = new Client({});
-const cmdFiles = fs
-	.readdirSync(COMMANDS_PATH)
-	.filter(file => file.endsWith(".js"));
+const client = new Client();
 
-const jsonCmds = new Array<unknown>();
-const player = new Player(client);
-const rest = new REST({ version: "9" }).setToken(process.env.TOKEN);
-
-// functions
-async function replyInteraction(
-	interaction: CommandInteraction,
-	message: string,
-) {
-	await interaction.reply({ content: message, ephemeral: true });
-}
-
-async function loadSlashCommands() {
-	logger.verbose(
-		`Started refreshing application (/) commands from ${
-			process.env.NODE_ENV === "production"
-				? "globally"
-				: "testing server"
-		}`,
-	);
-	try {
-		if (process.env.NODE_ENV === "production") {
-			await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
-				body: jsonCmds,
-			});
-		} else {
-			await rest.put(
-				Routes.applicationGuildCommands(
-					process.env.CLIENT_ID,
-					process.env.TESTING_SERVER_ID,
-				),
-				{
-					body: jsonCmds,
-				},
-			);
-		}
-	} catch (err) {
-		errorFromFunc(
-			"loadSlashCommands",
-			`Got an error while loading application commands: ${err}`,
-		);
-	}
-
-	logger.verbose("Successfully reloaded application (/) commands");
-}
-
-function loadAppCommands() {
-	// load those commandos
-	for (const file of cmdFiles) {
-		const command = require(`./commands/${file}`) as Command;
-		client.commands.set(command.builder.name, command);
-		jsonCmds.push(command.builder.toJSON());
-	}
-}
+// load commandos
+CMDS.forEach(command => client.commands.set(command.data.name, command));
 
 client.on("ready", () => {
-	loadSlashCommands();
 	logger.info("Jiro is now deployed!");
 });
 
-client.on("interactionCreate", async interaction => {
-	if (!interaction.isCommand()) return;
+// when someone replied
+client.on("interactionCreate", async int => {
+	if (!int.isCommand()) return;
 
-	const command = client.commands.get(interaction.commandName);
-	if (!command) {
-		return replyInteraction(
-			interaction,
-			`Command not found: /${interaction.commandName}`,
-		);
+	// load that command right up
+	const { commandName } = int;
+	const data = client.commands.get(commandName);
+	if (data === undefined) {
+		int.reply(`Unknown command: ${commandName}`);
+		return;
 	}
 
-	try {
-		await command.execute(interaction);
-	} catch (err) {
-		if (err) {
-			logger.error(toString(err));
+	// if command is server required, we need to verify the guild from interaction
+	if (int.guildId == undefined && data.guildOnly) {
+		int.reply(`Sorry, this command should be ran on server.`);
+		return;
+	}
+
+	// execute that
+	await data
+		.execute(int, client)
+		.then(async result => {
+			// do not execute if it is already replied
+			if (int.replied) return;
+			if (t.string(result)) {
+				return await int.reply(result);
+			}
+			return await int.reply("**Success!**");
+		})
+		.catch(reason => logger.error(reason));
+
+	// maybe there's an error
+	if (!int.replied) {
+		return await int.reply(`There's something wrong here?`);
+	}
+});
+
+client.on("messageCreate", async message => {
+	const result = parseTextToCommand(message);
+	if (result === undefined) {
+		return;
+	}
+
+	let commandInfo: Command | undefined;
+
+	for (const cmd of CMDS) {
+		const { name } = cmd.data;
+		if (result.command === name) {
+			commandInfo = cmd;
+			break;
 		}
-		return replyInteraction(
-			interaction,
-			`There's something wrong while running this command!`,
-		);
 	}
+
+	if (commandInfo === undefined) {
+		await message.reply(`Unknown command: ${result.command}`);
+		return;
+	}
+
+	// message them with an error
+	message.reply(`Legacy commands are not supported yet!`);
 });
 
-client.on("shardReconnecting", () => {
-	logger.info("Reconnecting");
-});
+if (CONFIG.DEV_MODE) {
+	logger.warn(`Jiro is running under development`);
+}
 
-client.once("shardDisconnect", () => {
-	logger.info("Session end!");
-});
-
-loadAppCommands();
-client.login(process.env.TOKEN);
+client.login(CONFIG.TOKEN);

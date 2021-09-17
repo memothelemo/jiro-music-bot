@@ -1,9 +1,13 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
-import { Message } from "eris";
-import { Client } from "../src/jiro/base/client";
+import { SharedSlashCommandOptions } from "@discordjs/builders/dist/interactions/slashCommands/mixins/CommandOptions";
+import { CommandInteraction, Message } from "discord.js";
+import { Client } from "../src/base/client";
 
 type Command = {
-	builder: SlashCommandBuilder;
-	execute(interaction: CommandInteraction): void;
+	data: SlashCommandBuilder;
+	guildOnly: boolean;
+	execute(
+		interaction: CommandInteraction,
+		client: Client,
+	): Promise<void | string>;
 };

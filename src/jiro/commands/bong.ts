@@ -3,10 +3,11 @@ import { Command } from "../../../types/client";
 import { identity } from "../../utility/identity";
 
 export = identity<Command>({
-	builder: new SlashCommandBuilder()
-		.setName("beep")
-		.setDescription("Replies with `boop` response"),
-	async execute(interaction) {
-		interaction.reply("Boop!");
+	data: new SlashCommandBuilder()
+		.setName("bong")
+		.setDescription("Does nothing"),
+	guildOnly: false,
+	async execute() {
+		return "Bong!";
 	},
 });

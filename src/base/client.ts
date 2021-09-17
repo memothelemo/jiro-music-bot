@@ -3,7 +3,7 @@ import {
 	ClientOptions,
 	Collection,
 } from "discord.js";
-import { Command } from "../../../types/client";
+import { Command } from "../../types/client";
 
 export interface GuildQueueMetadata {
 	guildId: string;
@@ -16,7 +16,7 @@ export class Client extends DiscordJSClient {
 	constructor(config?: Omit<ClientOptions, "intents">) {
 		super({
 			...config,
-			intents: ["GUILD_VOICE_STATES", "GUILDS"],
-		} as ClientOptions);
+			intents: ["GUILD_VOICE_STATES", "GUILDS", "GUILD_MESSAGES"],
+		});
 	}
 }

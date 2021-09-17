@@ -1,12 +1,12 @@
-import { inspect } from "util";
 import dotenv from "dotenv";
-import { logger } from "./shared";
 import { toString } from "./utility/toString";
+import { logger } from "./shared";
 
 // load dotenv
 dotenv.config();
 
-// node.js v16 is going to deprecate unhandled promise rejections
+// node.js v16 deprecates unhandled promise rejections
+// we can take advantage of this
 process.on("unhandledRejection", reason => {
 	logger.warn(`Unhandled rejection: ${toString(reason)}`);
 });
