@@ -100,6 +100,10 @@ export class Client extends DiscordJSClient {
 		if (!track) return `❌ | Track **${query}** not found!`;
 		queue.play(track);
 
-		return `Now playing: \`${track.title}\``;
+		const title = track.title;
+		if (this.queueMetadatas.has(member.guild.id)) {
+			return `Added to the queue: \`${title}\``;
+		}
+		return `Now playing: \`${title}\``;
 	}
 }
