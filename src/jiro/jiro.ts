@@ -90,3 +90,8 @@ if (CONFIG.DEV_MODE) {
 }
 
 client.login(CONFIG.TOKEN);
+
+process.on("beforeExit", () => {
+	client.cleanup();
+	client.destroy();
+});

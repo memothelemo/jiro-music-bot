@@ -8,6 +8,9 @@ export = identity<Command>({
 		.setDescription("Stops the music session"),
 	guildOnly: true,
 	async execute(int, client) {
+		if (!client.isGuildInSession(int.guild!)) {
+			return "Cannot stop while I'm not playing music!";
+		}
 		client.stopGuildPlayerSession(int.guild!);
 		return `Successfully stopped the player`;
 	},

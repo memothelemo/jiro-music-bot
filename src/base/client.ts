@@ -37,10 +37,15 @@ export class Client extends DiscordJSClient {
 		this.queueMetadatas.forEach(metadata => metadata.queue.destroy());
 	}
 
+	isGuildInSession(guild: Guild) {
+		return this.queueMetadatas.has(guild.id);
+	}
+
 	stopGuildPlayerSession(guild: Guild) {
 		const metadata = this.queueMetadatas.get(guild.id);
 		if (metadata) {
 			metadata.queue.stop();
+			this.queueMetadatas.delete(guild.id);
 		}
 	}
 
@@ -79,6 +84,7 @@ export class Client extends DiscordJSClient {
 			return "I need the permissions to join and speak in your voice channel!";
 		}
 
+		const hasCreatedQueue = this.queueMetadatas.has(member.guild.id);
 		const queue = this.createQueueFromGuild(
 			member.guild,
 			channel as GuildChannel,
@@ -101,7 +107,7 @@ export class Client extends DiscordJSClient {
 		queue.play(track);
 
 		const title = track.title;
-		if (this.queueMetadatas.has(member.guild.id)) {
+		if (hasCreatedQueue) {
 			return `Added to the queue: \`${title}\``;
 		}
 		return `Now playing: \`${title}\``;

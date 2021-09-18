@@ -8,6 +8,9 @@ export = identity<Command>({
 		.setDescription("Skips the current playing song"),
 	guildOnly: true,
 	async execute(int, client) {
+		if (!client.isGuildInSession(int.guild!)) {
+			return "Cannot skip while I'm not playing music!";
+		}
 		// first, we need to check if the queue is ready to skip
 		const metadata = client.queueMetadatas.get(int.guild!.id);
 		const tracksLeft = metadata?.queue.tracks.length;
