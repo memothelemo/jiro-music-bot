@@ -32,23 +32,32 @@ client.on("interactionCreate", async int => {
 		return;
 	}
 
+	await int.reply(":hammer: Working on it!");
+
 	// execute that
 	await data
 		.execute(int, client)
 		.then(async result => {
-			// do not execute if it is already replied
-			if (int.replied) return;
 			if (t.string(result)) {
-				return await int.reply(result);
+				return int.editReply(result);
 			}
-			return await int.reply("**Success!**");
+			return int.editReply("**Success!**");
 		})
-		.catch(reason => logger.error(reason));
-
-	// maybe there's an error
-	if (!int.replied) {
-		return await int.reply(`There's something wrong here?`);
-	}
+		.catch(async reason => {
+			logger.error(`Interaction Error: ${reason}`);
+			// maybe there's an error
+			if (!int.replied) {
+				if (
+					CONFIG.DEV_MODE ||
+					int.member?.user.id === CONFIG.OWNER_ID
+				) {
+					return await int.editReply(`\`${reason}\``);
+				}
+				return await int.editReply(
+					`There's something wrong here? Please try again.`,
+				);
+			}
+		});
 });
 
 client.on("messageCreate", async message => {
