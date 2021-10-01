@@ -30,12 +30,6 @@ const configCheck = t.objectRequired<JiroConfig>({
 });
 
 // validating config.json file
-const CONFIG_JSON = require(path.join(ROOT_DIR, "config.json"));
-assert(
-	configCheck(CONFIG_JSON),
-	"Not following the required structure of config.json!",
-);
-
 export const CONFIG = process.env;
 export const CMDS = fs
 	.readdirSync(path.join(DIST_DIR, "jiro", "commands"))
