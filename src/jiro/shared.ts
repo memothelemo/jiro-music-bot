@@ -36,7 +36,7 @@ assert(
 	"Not following the required structure of config.json!",
 );
 
-export const CONFIG = CONFIG_JSON;
+export const CONFIG = process.env;
 export const CMDS = fs
 	.readdirSync(path.join(DIST_DIR, "jiro", "commands"))
 	.filter(file => file.endsWith(".js"))

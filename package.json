@@ -8,14 +8,14 @@
     "watch": "tsc --w",
     "start": "node .",
     "update-cmds": "node dist/jiro/deploy.js",
-	"deploy": "forever .",
+    "deploy": "pm2 start dist/runtime.js",
     "debug": "nodemon . --config nodemon.json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "engines": {
-	"node": "^16.0.0"
+    "node": "^16.0.0"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
@@ -25,13 +25,12 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "forever": "^4.0.1",
     "prettier": "^2.4.1",
     "typescript": "^4.4.3"
   },
   "dependencies": {
     "@discordjs/builders": "^0.6.0",
-    "@discordjs/opus": "^0.6.0",
+    "@discordjs/opus": "^0.5.3",
     "@discordjs/rest": "^0.1.0-canary.0",
     "@memolemo-studios/log": "^1.0.3",
     "avconv": "^3.1.0",
@@ -40,6 +39,7 @@
     "dotenv": "^10.0.0",
     "ffmpeg-static": "^4.4.0",
     "nodemon": "^2.0.12",
+    "pm2": "^5.1.1",
     "ytdl-core": "^4.9.1"
   }
 }
