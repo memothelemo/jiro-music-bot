@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@discordjs/builders": "^0.6.0",
-    "@discordjs/opus": "^0.5.3",
+    "@discordjs/opus": "^0.8.0",
     "@discordjs/rest": "^0.1.0-canary.0",
     "@memolemo-studios/log": "^1.0.3",
     "avconv": "^3.1.0",
